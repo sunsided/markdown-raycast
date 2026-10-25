@@ -4,6 +4,10 @@ Walk through a Markdown file as if it were a maze. The document is rendered as t
 every glyph becomes a wall block, and a Wolfenstein-style raycaster lets you roam the
 corridors between the letters while a minimap shows the page and where you are.
 
+**[Play it in the browser](https://sunsided.github.io/markdown-raycast/)**, or open your own `.md` file there.
+
+[![A first-person view inside the sample document: an orange "How it works" heading towers behind a red list number and grey lines of text, with the minimap of the page in the corner.](https://raw.githubusercontent.com/sunsided/markdown-raycast/main/docs/screenshot.webp)](https://sunsided.github.io/markdown-raycast/)
+
 ## Development
 
 Requires Node.js 24 with corepack enabled (`corepack enable`) and [Task](https://taskfile.dev).
