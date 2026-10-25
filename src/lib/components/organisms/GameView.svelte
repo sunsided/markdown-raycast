@@ -96,22 +96,14 @@
 		}
 	}
 
+	// Bound to the focused view rather than window, so a page embedding the game keeps its keys.
 	function keydown(event: KeyboardEvent) {
-		// The minimap toggle works whether or not the view has focus, just not while typing.
-		if (event.code === 'KeyM' && !event.repeat && !isTyping(event.target)) {
+		if (event.code === 'KeyM' && !event.repeat) {
 			showMinimap = !showMinimap;
 			return;
 		}
-		if (!focused) return;
 		if (GAME_KEYS.has(event.code)) event.preventDefault();
 		controls.press(event.code);
-	}
-
-	function isTyping(target: EventTarget | null) {
-		return (
-			target instanceof HTMLElement &&
-			(target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
-		);
 	}
 
 	function mousemove(event: MouseEvent) {
@@ -119,11 +111,7 @@
 	}
 </script>
 
-<svelte:window
-	onkeydown={keydown}
-	onkeyup={(event) => controls.release(event.code)}
-	onblur={() => controls.clear()}
-/>
+<svelte:window onkeyup={(event) => controls.release(event.code)} onblur={() => controls.clear()} />
 <svelte:document onmousemove={mousemove} />
 
 <div class="game">
@@ -133,6 +121,7 @@
 		tabindex="0"
 		aria-label="3D view of the document"
 		onclick={start}
+		onkeydown={keydown}
 		onfocus={() => (focused = true)}
 		onblur={() => {
 			focused = false;
