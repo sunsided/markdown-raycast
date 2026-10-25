@@ -1,6 +1,6 @@
 import type { Grid } from './grid.js';
 import { FOV } from './renderer.js';
-import { PALETTE } from './materials.js';
+import { FLOOR_PALETTE, PALETTE } from './materials.js';
 import type { Player } from './player.js';
 
 export interface MinimapView {
@@ -26,7 +26,9 @@ export class Minimap {
 		const image = ctx.createImageData(grid.width, grid.height);
 		const data = image.data;
 		for (let i = 0; i < grid.cells.length; i++) {
-			const [r, g, b] = PALETTE[grid.cells[i]];
+			// Open floor shows its region tint, as code blocks and quotes do on a rendered page.
+			const cell = grid.cells[i];
+			const [r, g, b] = cell === 0 ? FLOOR_PALETTE[grid.floor[i]] : PALETTE[cell];
 			data[i * 4] = r;
 			data[i * 4 + 1] = g;
 			data[i * 4 + 2] = b;

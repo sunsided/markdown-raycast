@@ -50,3 +50,31 @@ export const PAPER: Rgb = PALETTE[Material.Empty];
 export function headingMaterial(depth: number): Material {
 	return (Material.Heading1 + Math.min(Math.max(depth, 1), 6) - 1) as Material;
 }
+
+/** Height of an ordinary wall, in cells. Glyph strokes are 1–5 cells thick, so walls tower over you. */
+export const BASE_WALL_HEIGHT = 10;
+
+/** Wall height per material, indexed by material id: H1 headings are huge, H2 large. */
+export const WALL_HEIGHTS: readonly number[] = Array.from({ length: MATERIAL_COUNT }, (_, m) =>
+	m === Material.Heading1 ? 36 : m === Material.Heading2 ? 20 : BASE_WALL_HEIGHT
+);
+
+export const MAX_WALL_HEIGHT = Math.max(...WALL_HEIGHTS);
+
+/** What the floor under a walkable cell belongs to; tints code and quote regions. */
+export const FloorKind = {
+	Paper: 0,
+	Code: 1,
+	Quote: 2
+} as const;
+
+export type FloorKind = (typeof FloorKind)[keyof typeof FloorKind];
+
+export const FLOOR_KIND_COUNT = 3;
+
+/** Floor colours per floor kind, indexed by kind id. */
+export const FLOOR_PALETTE: readonly Rgb[] = [
+	PALETTE[Material.Empty], // Paper
+	[218, 233, 226], // Code: a cool teal wash, like a code block background
+	[229, 224, 236] // Quote: a soft lavender-grey
+];

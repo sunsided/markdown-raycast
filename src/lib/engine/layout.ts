@@ -1,5 +1,5 @@
 import { Lexer, type Token, type Tokens } from 'marked';
-import { Material, headingMaterial } from './materials.js';
+import { FloorKind, Material, headingMaterial } from './materials.js';
 
 /**
  * Lays a Markdown document out like a rendered page. The result is a list of
@@ -43,12 +43,22 @@ export interface Section {
 	y: number;
 }
 
+/** An area whose floor is tinted, such as a code block or a quote. */
+export interface Region {
+	kind: FloorKind;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+}
+
 export interface PageLayout {
 	width: number;
 	height: number;
 	margin: number;
 	ops: DrawOp[];
 	sections: Section[];
+	regions: Region[];
 }
 
 /** Returns the advance width of `text` in page units. */
@@ -173,6 +183,7 @@ function collectRuns(tokens: Token[], style: Style, out: Run[] = []): Run[] {
 class PageBuilder {
 	readonly ops: DrawOp[] = [];
 	readonly sections: Section[] = [];
+	readonly regions: Region[] = [];
 	y: number;
 	maxX = 0;
 
@@ -280,11 +291,20 @@ class PageBuilder {
 					const style = { font: this.font(codeSize, { mono: true }), material: Material.Code };
 					const top = this.y;
 					const advance = codeSize * lineHeight * 0.8;
+					let right = x + width;
 					for (const line of t.text.replace(/\t/g, '    ').split('\n')) {
-						if (line.trim()) this.text(x + 20, this.y, line, style);
+						if (line.trim())
+							right = Math.max(right, x + 20 + this.text(x + 20, this.y, line, style));
 						this.y += advance;
 					}
 					this.rect(x, top - codeSize * 0.4, 3, this.y - top, Material.Code);
+					this.regions.push({
+						kind: FloorKind.Code,
+						x,
+						y: top - codeSize * 0.4,
+						width: right - x,
+						height: this.y - top
+					});
 					this.y += gap;
 					break;
 				}
@@ -295,7 +315,10 @@ class PageBuilder {
 					this.blocks(t.tokens, x + 24, width - 24, style);
 					// An empty quote (`>` alone) has no content; skip its bar rather than emit a negative height.
 					const height = this.y - top - gap;
-					if (height > 0) this.rect(x, top - bodySize * 0.4, 4, height, Material.Quote);
+					if (height > 0) {
+						this.rect(x, top - bodySize * 0.4, 4, height, Material.Quote);
+						this.regions.push({ kind: FloorKind.Quote, x, y: top - bodySize * 0.4, width, height });
+					}
 					break;
 				}
 				case 'hr':
@@ -399,6 +422,7 @@ export function layoutMarkdown(
 		height: Math.ceil(builder.y + opts.margin),
 		margin: opts.margin,
 		ops: builder.ops,
-		sections: builder.sections
+		sections: builder.sections,
+		regions: builder.regions
 	};
 }
