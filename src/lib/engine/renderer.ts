@@ -1,10 +1,21 @@
 import { cellAt, type Grid } from './grid.js';
-import { MATERIAL_COUNT, Material, PALETTE, PAPER, type Rgb } from './materials.js';
+import {
+	BASE_WALL_HEIGHT,
+	FLOOR_KIND_COUNT,
+	FLOOR_PALETTE,
+	MATERIAL_COUNT,
+	MAX_WALL_HEIGHT,
+	Material,
+	PALETTE,
+	PAPER,
+	WALL_HEIGHTS,
+	type Rgb
+} from './materials.js';
 import type { Player } from './player.js';
-import { castRay, emptyHit } from './raycast.js';
+import { emptyHit, traceRay, type RayHit } from './raycast.js';
 
-/** How tall walls are, in cells. Glyph strokes are 1–5 cells thick, so walls tower over you. */
-export const WALL_HEIGHT = 10;
+/** Height of an ordinary wall in cells; the eye sits at half of it. Headings are taller. */
+export const WALL_HEIGHT = BASE_WALL_HEIGHT;
 export const MAX_DISTANCE = 220;
 export const FOV = (70 * Math.PI) / 180;
 
@@ -60,7 +71,8 @@ export class Renderer {
 	private image!: ImageData;
 	private pixels!: Uint32Array;
 	private readonly shades = buildWallShades();
-	private readonly floorShades = new Uint32Array(FOG_LEVELS * 2);
+	/** Floor shades: [floor kind][fog level][0 paper, 1 ruling line]. */
+	private readonly floorShades = new Uint32Array(FLOOR_KIND_COUNT * FOG_LEVELS * 2);
 	private readonly hit = emptyHit();
 	/** Hit distance per screen column (along the view direction). */
 	depth = new Float32Array(0);
@@ -69,11 +81,16 @@ export class Renderer {
 		const ctx = canvas.getContext('2d');
 		if (!ctx) throw new Error('2D canvas is not available');
 		this.ctx = ctx;
-		for (let f = 0; f < FOG_LEVELS; f++) {
-			const fog = f / (FOG_LEVELS - 1);
-			const line = mix(FLOOR_LINE, PAPER, fog);
-			this.floorShades[f * 2] = pack(PAPER[0], PAPER[1], PAPER[2]);
-			this.floorShades[f * 2 + 1] = pack(line[0], line[1], line[2]);
+		for (let k = 0; k < FLOOR_KIND_COUNT; k++) {
+			for (let f = 0; f < FOG_LEVELS; f++) {
+				const fog = f / (FOG_LEVELS - 1);
+				// Tinted regions fade back to plain paper in the distance, like everything else.
+				const paper = mix(FLOOR_PALETTE[k], PAPER, fog);
+				const line = mix(mix(FLOOR_LINE, FLOOR_PALETTE[k], 0.35), PAPER, fog);
+				const i = (k * FOG_LEVELS + f) * 2;
+				this.floorShades[i] = pack(paper[0], paper[1], paper[2]);
+				this.floorShades[i + 1] = pack(line[0], line[1], line[2]);
+			}
 		}
 		this.resize(canvas.width, canvas.height);
 	}
@@ -114,7 +131,10 @@ export class Renderer {
 			px.fill(pack(c[0], c[1], c[2]), y * w, (y + 1) * w);
 		}
 
-		// Floor casting: squared paper ruling that fades out with distance.
+		// Floor casting: squared paper ruling that fades out with distance, tinted under code and quotes.
+		const floor = grid.floor;
+		const gw = grid.width;
+		const gh = grid.height;
 		const leftX = dirX - planeX;
 		const leftY = dirY - planeY;
 		const spanX = (2 * planeX) / w;
@@ -134,46 +154,85 @@ export class Renderer {
 				const uy = fy / RULING;
 				const onLine =
 					ux - Math.floor(ux) < lineWidth / RULING || uy - Math.floor(uy) < lineWidth / RULING;
-				px[i] = this.floorShades[fogBase + (onLine ? 1 : 0)];
+				const cx = Math.floor(fx);
+				const cy = Math.floor(fy);
+				const kind = cx >= 0 && cy >= 0 && cx < gw && cy < gh ? floor[cy * gw + cx] : 0;
+				px[i] = this.floorShades[kind * FOG_LEVELS * 2 + fogBase + (onLine ? 1 : 0)];
 			}
 		}
 
-		// Walls.
-		const hit = this.hit;
-		for (let x = 0; x < w; x++) {
-			const camera = (2 * x) / w - 1;
-			const rayX = dirX + planeX * camera;
-			const rayY = dirY + planeY * camera;
-			if (!castRay(grid, player.x, player.y, rayX, rayY, MAX_DISTANCE, hit)) {
-				this.depth[x] = MAX_DISTANCE;
-				continue;
-			}
+		// Walls, front to back. Each column keeps `clip`, the lowest screen row still free
+		// above everything drawn so far; a farther, taller wall only fills the rows above it.
+		let column = 0;
+		let clip = h;
+		let first = true;
+		const visit = (hit: RayHit) => {
 			const distance = Math.max(hit.distance, 1e-4);
-			this.depth[x] = distance;
-
-			const lineHeight = (WALL_HEIGHT * focal) / distance;
-			const top = horizon - lineHeight / 2;
-			const y0 = Math.max(0, Math.floor(top));
-			const y1 = Math.min(h, Math.ceil(horizon + lineHeight / 2));
-
-			// Outline only where the glyph's face ends, not on every cell seam along it.
-			let edge = 0;
-			if (hit.wallX < 0.07 || hit.wallX > 0.93) {
-				const step = hit.wallX < 0.5 ? -1 : 1;
-				const neighbour =
-					hit.side === 0
-						? cellAt(grid, hit.cellX, hit.cellY + step)
-						: cellAt(grid, hit.cellX + step, hit.cellY);
-				if (neighbour === Material.Empty) edge = 2;
+			if (first) {
+				this.depth[column] = distance;
+				first = false;
 			}
-			const base = ((hit.material * FOG_LEVELS + fogLevel(distance)) << 2) | hit.side;
-			const body = this.shades[base | edge];
-			const rim = this.shades[base | 2];
-			// A lighter cap band at the top of each wall reads as the glyph's "surface".
-			const capEnd = top + lineHeight * 0.04;
-			for (let y = y0; y < y1; y++) px[y * w + x] = y < capEnd ? rim : body;
+			const height = WALL_HEIGHTS[hit.material];
+			const scale = focal / distance;
+			const top = horizon - (height - eye) * scale;
+			const y0 = Math.max(0, Math.floor(top));
+			const y1 = Math.min(clip, Math.ceil(horizon + eye * scale));
+			if (y0 < y1) this.drawSlice(grid, hit, distance, column, top, height * scale, y0, y1);
+			clip = Math.min(clip, y0);
+			// Stop once the column is full, nothing behind can be taller, or even the tallest
+			// wall at this distance would already end below the free rows (it only gets lower).
+			return (
+				clip > 0 && height < MAX_WALL_HEIGHT && horizon - (MAX_WALL_HEIGHT - eye) * scale < clip
+			);
+		};
+		for (column = 0; column < w; column++) {
+			const camera = (2 * column) / w - 1;
+			clip = h;
+			first = true;
+			this.depth[column] = MAX_DISTANCE;
+			traceRay(
+				grid,
+				player.x,
+				player.y,
+				dirX + planeX * camera,
+				dirY + planeY * camera,
+				MAX_DISTANCE,
+				this.hit,
+				visit
+			);
 		}
 
 		this.ctx.putImageData(this.image, 0, 0);
+	}
+
+	/** Paints rows [y0, y1) of one wall face into a screen column. */
+	private drawSlice(
+		grid: Grid,
+		hit: RayHit,
+		distance: number,
+		x: number,
+		top: number,
+		lineHeight: number,
+		y0: number,
+		y1: number
+	) {
+		// Outline only where the glyph's face ends, not on every cell seam along it.
+		let edge = 0;
+		if (hit.wallX < 0.07 || hit.wallX > 0.93) {
+			const step = hit.wallX < 0.5 ? -1 : 1;
+			const neighbour =
+				hit.side === 0
+					? cellAt(grid, hit.cellX, hit.cellY + step)
+					: cellAt(grid, hit.cellX + step, hit.cellY);
+			if (neighbour === Material.Empty) edge = 2;
+		}
+		const base = ((hit.material * FOG_LEVELS + fogLevel(distance)) << 2) | hit.side;
+		const body = this.shades[base | edge];
+		const rim = this.shades[base | 2];
+		// A lighter cap band at the top of each wall reads as the glyph's "surface".
+		const capEnd = top + Math.min(lineHeight * 0.04, 6);
+		const w = this.canvas.width;
+		const px = this.pixels;
+		for (let y = y0; y < y1; y++) px[y * w + x] = y < capEnd ? rim : body;
 	}
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { gridFromRows } from './grid.js';
 import { Material } from './materials.js';
-import { castRay, emptyHit } from './raycast.js';
+import { castRay, emptyHit, traceRay, type RayHit } from './raycast.js';
 
 const grid = gridFromRows([
 	'..........', //
@@ -46,5 +46,44 @@ describe('castRay', () => {
 		castRay(gridFromRows(['...#', '...#', '...#', '...#']), 0.5, 1.5, 1, 0.5, 100, hit);
 		expect(hit.cellX).toBe(3);
 		expect(hit.distance).toBeCloseTo(2.5);
+	});
+});
+
+describe('traceRay', () => {
+	const collect = (rows: string[], max = 100) => {
+		const hits: Pick<RayHit, 'cellX' | 'material'>[] = [];
+		traceRay(gridFromRows(rows), 0.5, 0.5, 1, 0, max, emptyHit(), (hit) => {
+			hits.push({ cellX: hit.cellX, material: hit.material });
+			return true;
+		});
+		return hits;
+	};
+
+	it('reports a taller heading behind shorter text', () => {
+		expect(collect(['..##..11..'])).toEqual([
+			{ cellX: 2, material: Material.Text },
+			{ cellX: 6, material: Material.Heading1 },
+			{ cellX: 10, material: Material.Edge }
+		]);
+	});
+
+	it('skips cells hidden behind a wall of the same or greater height', () => {
+		// The second text cell and the text after the H2 are fully occluded.
+		const hits = collect(['.##2#.#...']);
+		expect(hits.map((h) => h.cellX)).toEqual([1, 3, 6, 10]);
+	});
+
+	it('stops when the visitor says so', () => {
+		const hits: number[] = [];
+		traceRay(gridFromRows(['..#..1....']), 0.5, 0.5, 1, 0, 100, emptyHit(), (hit) => {
+			hits.push(hit.cellX);
+			return false;
+		});
+		expect(hits).toEqual([2]);
+	});
+
+	it('ends at the page edge and at the maximum distance', () => {
+		expect(collect(['....']).map((h) => h.material)).toEqual([Material.Edge]);
+		expect(collect(['..........#'], 5)).toEqual([]);
 	});
 });

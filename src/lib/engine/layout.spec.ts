@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LAYOUT, layoutMarkdown, type Measure, type TextOp } from './layout.js';
-import { Material } from './materials.js';
+import { FloorKind, Material } from './materials.js';
 
 /** Monospace stand-in for canvas text metrics. */
 const measure: Measure = (text, font) => text.length * font.size * 0.5;
@@ -112,5 +112,22 @@ describe('layoutMarkdown', () => {
 		expect(quoteBars('before\n\n>\n\nafter')).toEqual([]);
 		const [bar] = quoteBars('> quoted');
 		expect(bar.kind === 'rect' && bar.height).toBeGreaterThan(0);
+	});
+
+	it('records floor regions for code blocks and quotes', () => {
+		const layout = layoutMarkdown('text\n\n```\ncode\n```\n\n> quoted\n\nmore', measure);
+		expect(layout.regions.map((r) => r.kind)).toEqual([FloorKind.Code, FloorKind.Quote]);
+		const [code, quote] = layout.regions;
+		const codeText = layout.ops.find((op) => op.kind === 'text' && op.text === 'code')!;
+		expect(codeText.y).toBeGreaterThanOrEqual(code.y);
+		expect(codeText.y).toBeLessThan(code.y + code.height);
+		expect(quote.y).toBeGreaterThanOrEqual(code.y + code.height);
+		expect(quote.width).toBeGreaterThan(0);
+	});
+
+	it('widens a code region to fit lines longer than the page', () => {
+		const layout = layoutMarkdown('```\n' + 'x'.repeat(200) + '\n```', measure);
+		const [code] = layout.regions;
+		expect(code.x + code.width).toBeGreaterThan(DEFAULT_LAYOUT.width - DEFAULT_LAYOUT.margin);
 	});
 });
