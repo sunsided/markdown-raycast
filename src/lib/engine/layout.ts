@@ -253,7 +253,7 @@ class PageBuilder {
 			switch (token.type) {
 				case 'heading': {
 					const t = token as Tokens.Heading;
-					const size = headingSizes[Math.min(t.depth, 6) - 1];
+					const size = headingSizes[Math.min(Math.max(t.depth, 1), 6) - 1];
 					const style = {
 						font: this.font(size, { bold: true }),
 						material: headingMaterial(t.depth)
@@ -293,7 +293,9 @@ class PageBuilder {
 					const top = this.y;
 					const style = { font: { ...base.font, italic: true }, material: Material.Quote };
 					this.blocks(t.tokens, x + 24, width - 24, style);
-					this.rect(x, top - bodySize * 0.4, 4, this.y - top - gap, Material.Quote);
+					// An empty quote (`>` alone) has no content; skip its bar rather than emit a negative height.
+					const height = this.y - top - gap;
+					if (height > 0) this.rect(x, top - bodySize * 0.4, 4, height, Material.Quote);
 					break;
 				}
 				case 'hr':

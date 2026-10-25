@@ -42,4 +42,16 @@ describe('Controls', () => {
 		controls.clear();
 		expect(controls.update(open, p, 0.1)).toBe(false);
 	});
+
+	it('keeps the angle within [0, 2π) in both turn directions', () => {
+		const controls = new Controls();
+		const p = { x: 10.5, y: 10.5, angle: 0 };
+		controls.look(-100);
+		controls.update(open, p, 0.016);
+		expect(p.angle).toBeCloseTo(Math.PI * 2 - 100 * MOUSE_SENSITIVITY);
+		controls.look((20 * Math.PI) / MOUSE_SENSITIVITY);
+		controls.update(open, p, 0.016);
+		expect(p.angle).toBeGreaterThanOrEqual(0);
+		expect(p.angle).toBeLessThan(Math.PI * 2);
+	});
 });

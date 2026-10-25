@@ -103,4 +103,14 @@ describe('layoutMarkdown', () => {
 		const last = layout.ops.at(-1)!;
 		expect(layout.height).toBeGreaterThan(last.y + DEFAULT_LAYOUT.margin - 1);
 	});
+
+	it('draws a quote bar only for blockquotes with content', () => {
+		const quoteBars = (md: string) =>
+			layoutMarkdown(md, measure).ops.filter(
+				(op) => op.kind === 'rect' && op.material === Material.Quote
+			);
+		expect(quoteBars('before\n\n>\n\nafter')).toEqual([]);
+		const [bar] = quoteBars('> quoted');
+		expect(bar.kind === 'rect' && bar.height).toBeGreaterThan(0);
+	});
 });

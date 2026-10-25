@@ -58,7 +58,9 @@ export class Controls {
 		this.mouseTurn = 0;
 		if (turn === 0 && mouseTurn === 0 && forward === 0 && strafe === 0) return false;
 
-		player.angle += turn * TURN_SPEED * dt + mouseTurn;
+		// Keep the angle bounded so long sessions don't erode trig precision.
+		const TAU = Math.PI * 2;
+		player.angle = (((player.angle + turn * TURN_SPEED * dt + mouseTurn) % TAU) + TAU) % TAU;
 		const speed = WALK_SPEED * (this.any(RUN) ? RUN_FACTOR : 1) * dt;
 		const norm = forward !== 0 && strafe !== 0 ? Math.SQRT1_2 : 1;
 		const cos = Math.cos(player.angle);
