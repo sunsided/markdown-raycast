@@ -11,7 +11,15 @@ export {
 	TURN_SPEED,
 	WALK_SPEED
 } from './engine/controls.js';
-export { cellAt, createGrid, floorAt, gridFromRows, isSolid, type Grid } from './engine/grid.js';
+export {
+	cellAt,
+	createGrid,
+	floorAt,
+	gridFromRows,
+	isSolid,
+	stampRegions,
+	type Grid
+} from './engine/grid.js';
 export {
 	DEFAULT_LAYOUT,
 	fontString,

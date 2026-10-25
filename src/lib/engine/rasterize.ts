@@ -1,4 +1,4 @@
-import { createGrid, type Grid } from './grid.js';
+import { createGrid, stampRegions, type Grid } from './grid.js';
 import { fontString, type FontSpec, type Measure, type PageLayout } from './layout.js';
 
 /** Rows rendered per canvas pass; keeps us below browser canvas size limits for long documents. */
@@ -44,14 +44,7 @@ export function canvasMeasure(): Measure {
  */
 export function rasterize(layout: PageLayout): Grid {
 	const grid = createGrid(layout.width, layout.height);
-	for (const region of layout.regions) {
-		const x0 = Math.max(0, Math.floor(region.x));
-		const x1 = Math.min(layout.width, Math.ceil(region.x + region.width));
-		const y0 = Math.max(0, Math.floor(region.y));
-		const y1 = Math.min(layout.height, Math.ceil(region.y + region.height));
-		for (let y = y0; y < y1; y++)
-			grid.floor.fill(region.kind, y * layout.width + x0, y * layout.width + x1);
-	}
+	stampRegions(grid, layout.regions);
 	const ctx = createContext(layout.width, Math.min(CHUNK_ROWS, layout.height));
 	ctx.textBaseline = 'top';
 	ctx.fillStyle = '#000';

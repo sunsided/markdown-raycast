@@ -1,3 +1,4 @@
+import type { Region } from './layout.js';
 import { FloorKind, Material, headingMaterial } from './materials.js';
 
 /** The walkable world: one material id per cell, row-major, plus what the floor belongs to. */
@@ -37,6 +38,25 @@ export function gridFromRows(rows: readonly string[]): Grid {
 export function cellAt(grid: Grid, x: number, y: number): Material {
 	if (x < 0 || y < 0 || x >= grid.width || y >= grid.height) return Material.Edge;
 	return grid.cells[y * grid.width + x] as Material;
+}
+
+/**
+ * Tints the floor under each region. Only plain paper is written, so the first region
+ * to claim a cell keeps it. Layout records nested blocks (a code block inside a quote)
+ * before their container, so the inner, more specific tint wins.
+ */
+export function stampRegions(grid: Grid, regions: readonly Region[]): void {
+	for (const region of regions) {
+		const x0 = Math.max(0, Math.floor(region.x));
+		const x1 = Math.min(grid.width, Math.ceil(region.x + region.width));
+		const y0 = Math.max(0, Math.floor(region.y));
+		const y1 = Math.min(grid.height, Math.ceil(region.y + region.height));
+		for (let y = y0; y < y1; y++) {
+			for (let i = y * grid.width + x0, end = y * grid.width + x1; i < end; i++) {
+				if (grid.floor[i] === FloorKind.Paper) grid.floor[i] = region.kind;
+			}
+		}
+	}
 }
 
 export function floorAt(grid: Grid, x: number, y: number): FloorKind {
