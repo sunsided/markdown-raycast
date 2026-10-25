@@ -146,9 +146,7 @@
 
 	{#if !focused}
 		<div class="overlay">
-			<button class="start" onclick={start} aria-label="Start walking">
-				<ControlsHelp />
-			</button>
+			<ControlsHelp onstart={start} />
 		</div>
 	{/if}
 </div>
@@ -193,15 +191,6 @@
 		place-items: center;
 		padding: var(--space-4);
 		background: var(--surface-scrim);
-	}
-
-	.start {
-		padding: 0;
-		border: none;
-		background: none;
-		font: inherit;
-		text-align: left;
-		cursor: pointer;
 	}
 
 	@media (max-width: 640px) {
