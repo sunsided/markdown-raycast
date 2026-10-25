@@ -1,0 +1,25 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ['*']
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    ignore:
+      # svelte-check and typescript-eslint do not support the native TypeScript 7 compiler yet.
+      - dependency-name: typescript
+        versions: ['>=7']
+    groups:
+      dependencies:
+        patterns: ['*']
