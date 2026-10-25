@@ -20,7 +20,13 @@
 </script>
 
 <Panel class="minimap">
-	<canvas bind:this={canvas} onclick={click} aria-label="Minimap of the document"></canvas>
+	<!-- Prevent the mousedown from moving focus off the 3D view, which would pause the game. -->
+	<canvas
+		bind:this={canvas}
+		onmousedown={(event) => event.preventDefault()}
+		onclick={click}
+		aria-label="Minimap of the document"
+	></canvas>
 </Panel>
 
 <style>

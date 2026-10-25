@@ -96,9 +96,9 @@
 		}
 	}
 
+	// Bound to the focused view rather than window, so a page embedding the game keeps its keys.
 	function keydown(event: KeyboardEvent) {
-		if (!focused) return;
-		if (event.code === 'KeyM') {
+		if (event.code === 'KeyM' && !event.repeat) {
 			showMinimap = !showMinimap;
 			return;
 		}
@@ -111,11 +111,7 @@
 	}
 </script>
 
-<svelte:window
-	onkeydown={keydown}
-	onkeyup={(event) => controls.release(event.code)}
-	onblur={() => controls.clear()}
-/>
+<svelte:window onkeyup={(event) => controls.release(event.code)} onblur={() => controls.clear()} />
 <svelte:document onmousemove={mousemove} />
 
 <div class="game">
@@ -125,6 +121,7 @@
 		tabindex="0"
 		aria-label="3D view of the document"
 		onclick={start}
+		onkeydown={keydown}
 		onfocus={() => (focused = true)}
 		onblur={() => {
 			focused = false;
