@@ -4,6 +4,7 @@
 	import { collides, type Player } from '../../engine/player';
 	import { Renderer } from '../../engine/renderer';
 	import { sectionAt, type World } from '../../engine/world';
+	import FilmGrain from '../atoms/FilmGrain.svelte';
 	import ControlsHelp from './ControlsHelp.svelte';
 	import Hud from './Hud.svelte';
 	import MinimapPanel from './MinimapPanel.svelte';
@@ -118,6 +119,8 @@
 			controls.clear();
 		}}
 	></canvas>
+
+	<FilmGrain />
 
 	<div class="top-left">
 		<Hud {...section} />
