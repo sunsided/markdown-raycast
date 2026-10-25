@@ -66,8 +66,8 @@
 	--panel-padding: var(--space-3);
 	--panel-radius: var(--radius-md);
 	--control-height: 2rem;
-	--minimap-width: 15rem;
-	--minimap-height: 20rem;
+	--minimap-width: min(15rem, 35vw);
+	--minimap-height: min(20rem, 55dvh);
 	--grain-opacity: 0.07;
 	--grain-size: 1;
 	--grain-blend: overlay;
@@ -92,8 +92,8 @@
 
 @media (max-width: 640px) {
 	:root {
-		--minimap-width: 9rem;
-		--minimap-height: 12rem;
+		--minimap-width: min(9rem, 35vw);
+		--minimap-height: min(12rem, 40dvh);
 	}
 }
 

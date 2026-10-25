@@ -97,13 +97,21 @@
 	}
 
 	function keydown(event: KeyboardEvent) {
-		if (!focused) return;
-		if (event.code === 'KeyM') {
+		// The minimap toggle works whether or not the view has focus, just not while typing.
+		if (event.code === 'KeyM' && !event.repeat && !isTyping(event.target)) {
 			showMinimap = !showMinimap;
 			return;
 		}
+		if (!focused) return;
 		if (GAME_KEYS.has(event.code)) event.preventDefault();
 		controls.press(event.code);
+	}
+
+	function isTyping(target: EventTarget | null) {
+		return (
+			target instanceof HTMLElement &&
+			(target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+		);
 	}
 
 	function mousemove(event: MouseEvent) {
