@@ -35,6 +35,20 @@ tasks:
     cmds:
       - yarn build
 
+  package:
+    desc: Build the npm package into dist/ and lint it with publint
+    deps: [install]
+    cmds:
+      - yarn package
+      - yarn package:lint
+
+  package:pack:
+    desc: Build the package and pack it into package.tgz (VERSION=1.2.3 to stamp a version)
+    deps: [package]
+    cmds:
+      - '{{if .VERSION}}yarn version {{.VERSION}} --immediate{{end}}'
+      - yarn pack --out package.tgz
+
   preview:
     desc: Preview the production build locally
     deps: [build]
@@ -126,13 +140,14 @@ tasks:
       - task: lint:actions
 
   ci:
-    desc: Full CI sequence (checks, tests, build)
+    desc: Full CI sequence (checks, tests, build, package)
     cmds:
       - task: check
       - task: test
       - task: build
+      - task: package
 
   clean:
     desc: Remove build output and caches
     cmds:
-      - rm -rf build .svelte-kit node_modules/.vite
+      - rm -rf build dist package.tgz .svelte-kit node_modules/.vite

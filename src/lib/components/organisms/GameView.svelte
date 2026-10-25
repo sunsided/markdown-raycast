@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { Controls, GAME_KEYS } from '../../engine/controls';
-	import { Minimap } from '../../engine/minimap';
-	import { collides, type Player } from '../../engine/player';
-	import { Renderer } from '../../engine/renderer';
-	import { sectionAt, type World } from '../../engine/world';
+	import { Controls, GAME_KEYS } from '../../engine/controls.js';
+	import { Minimap } from '../../engine/minimap.js';
+	import { collides, type Player } from '../../engine/player.js';
+	import { Renderer } from '../../engine/renderer.js';
+	import { sectionAt, type World } from '../../engine/world.js';
 	import FilmGrain from '../atoms/FilmGrain.svelte';
 	import ControlsHelp from './ControlsHelp.svelte';
 	import Hud from './Hud.svelte';

@@ -1,7 +1,7 @@
-import type { Grid } from './grid';
-import { FOV } from './renderer';
-import { PALETTE } from './materials';
-import type { Player } from './player';
+import type { Grid } from './grid.js';
+import { FOV } from './renderer.js';
+import { PALETTE } from './materials.js';
+import type { Player } from './player.js';
 
 export interface MinimapView {
 	/** Page units per minimap pixel. */

@@ -1,0 +1,22 @@
+/* Page-level base styles for the demo site; the published package only ships tokens.css. */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	height: 100%;
+	background: var(--surface-page);
+	color: var(--text-primary);
+	font-family: var(--font-family-sans);
+	font-size: var(--font-size-300);
+	line-height: var(--line-height-normal);
+}
+
+:focus-visible {
+	outline: 2px solid var(--focus-ring);
+	outline-offset: 2px;
+}

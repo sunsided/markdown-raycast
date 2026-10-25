@@ -34,3 +34,7 @@ vite.config.ts.timestamp-*
 # Task
 .task
 .playwright-mcp
+
+# Package build
+/dist
+*.tgz

@@ -30,6 +30,12 @@
 			border-color var(--duration-fast) var(--easing-standard);
 	}
 
+	/* Owned here rather than by a global rule, so the ring survives in host pages too. */
+	.button:focus-visible {
+		outline: 2px solid var(--focus-ring);
+		outline-offset: 2px;
+	}
+
 	.ghost {
 		background: transparent;
 		color: var(--text-primary);

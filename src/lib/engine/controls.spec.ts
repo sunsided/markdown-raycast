@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { Controls, MOUSE_SENSITIVITY, WALK_SPEED } from './controls';
-import { gridFromRows } from './grid';
+import { Controls, MOUSE_SENSITIVITY, WALK_SPEED } from './controls.js';
+import { gridFromRows } from './grid.js';
 
 const open = gridFromRows(Array.from({ length: 40 }, () => '.'.repeat(40)));
 

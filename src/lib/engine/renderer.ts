@@ -1,7 +1,7 @@
-import { cellAt, type Grid } from './grid';
-import { MATERIAL_COUNT, Material, PALETTE, PAPER, type Rgb } from './materials';
-import type { Player } from './player';
-import { castRay, emptyHit } from './raycast';
+import { cellAt, type Grid } from './grid.js';
+import { MATERIAL_COUNT, Material, PALETTE, PAPER, type Rgb } from './materials.js';
+import type { Player } from './player.js';
+import { castRay, emptyHit } from './raycast.js';
 
 /** How tall walls are, in cells. Glyph strokes are 1–5 cells thick, so walls tower over you. */
 export const WALL_HEIGHT = 10;

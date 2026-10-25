@@ -21,7 +21,7 @@
 			<li><KeyHint {...hint} /></li>
 		{/each}
 	</ul>
-	<p class="tip">Click the minimap to jump there. Drop a .md file anywhere to walk it.</p>
+	<p class="tip">Click the minimap to jump there.</p>
 	<Button variant="primary" onclick={onstart}>Start walking</Button>
 </Panel>
 

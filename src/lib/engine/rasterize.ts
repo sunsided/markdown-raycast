@@ -1,5 +1,5 @@
-import { createGrid, type Grid } from './grid';
-import { fontString, type FontSpec, type Measure, type PageLayout } from './layout';
+import { createGrid, type Grid } from './grid.js';
+import { fontString, type FontSpec, type Measure, type PageLayout } from './layout.js';
 
 /** Rows rendered per canvas pass; keeps us below browser canvas size limits for long documents. */
 const CHUNK_ROWS = 2048;
