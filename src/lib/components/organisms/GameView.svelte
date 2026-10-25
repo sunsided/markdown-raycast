@@ -29,6 +29,21 @@
 		minimap = new Minimap(world.grid);
 	});
 
+	// Size the minimap's backing store only when its CSS box changes; reading layout every
+	// frame would force a reflow. Re-runs when the minimap is toggled back on.
+	$effect(() => {
+		const target = minimapCanvas;
+		if (!target) return;
+		const observer = new ResizeObserver(([entry]) => {
+			const width = Math.round(entry.contentRect.width);
+			const height = Math.round(entry.contentRect.height);
+			if (target.width !== width) target.width = width;
+			if (target.height !== height) target.height = height;
+		});
+		observer.observe(target);
+		return () => observer.disconnect();
+	});
+
 	$effect(() => {
 		const renderer = new Renderer(canvas);
 		const observer = new ResizeObserver(([entry]) => {
@@ -47,9 +62,6 @@
 
 			if (minimapCanvas && minimap) {
 				const ctx = minimapCanvas.getContext('2d');
-				const { width, height } = minimapCanvas.getBoundingClientRect();
-				if (minimapCanvas.width !== Math.round(width)) minimapCanvas.width = Math.round(width);
-				if (minimapCanvas.height !== Math.round(height)) minimapCanvas.height = Math.round(height);
 				if (ctx) minimap.draw(ctx, player, renderer.depth);
 			}
 
