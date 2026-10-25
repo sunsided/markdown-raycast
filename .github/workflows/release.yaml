@@ -51,20 +51,99 @@ jobs:
       - name: Build
         run: task build
 
+      # The npm package version comes from the tag (v1.2.3 -> 1.2.3).
+      - name: Pack npm package
+        env:
+          TAG: ${{ github.ref_name }}
+        run: task package:pack VERSION="${TAG#v}"
+
       - name: Package site
         env:
           TAG: ${{ github.ref_name }}
         run: |
-          mkdir -p dist
-          (cd build && zip -qr "../dist/markdown-raycast-${TAG}.zip" .)
-          (cd dist && sha256sum -- *.zip > SHA256SUMS)
+          mkdir -p release
+          (cd build && zip -qr "../release/markdown-raycast-${TAG}.zip" .)
+          cp package.tgz "release/markdown-raycast-${TAG}.tgz"
+          (cd release && sha256sum -- *.zip *.tgz > SHA256SUMS)
 
-      - name: Upload package
+      - name: Upload release files
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release
-          path: dist/
+          path: release/
           if-no-files-found: error
+
+      - name: Upload npm package
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: npm-package
+          path: package.tgz
+          if-no-files-found: error
+
+  publish-github:
+    name: Publish to GitHub Packages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Download npm package
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: npm-package
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://npm.pkg.github.com
+          scope: '@sunsided'
+          package-manager-cache: false
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        # GitHub Packages has no OIDC trusted publishing; the job token is already short-lived.
+        run: | # zizmor: ignore[use-trusted-publishing]
+          dist_tag=latest
+          if [[ "$TAG" == *-* ]]; then dist_tag=next; fi
+          npm publish package.tgz --tag "$dist_tag"
+
+  publish-npm:
+    name: Publish to npmjs
+    needs: build
+    runs-on: ubuntu-latest
+    # Trusted publishing (OIDC) needs no secret once configured on npmjs.com; until then
+    # (e.g. for the very first publish) an NPM_TOKEN secret on this environment is used.
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/@sunsided/markdown-raycast
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download npm package
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: npm-package
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          dist_tag=latest
+          if [[ "$TAG" == *-* ]]; then dist_tag=next; fi
+          npm publish package.tgz --access public --provenance --tag "$dist_tag"
 
   release:
     name: Create GitHub release
@@ -73,11 +152,11 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download package
+      - name: Download release files
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release
-          path: dist
+          path: release
 
       - name: Create release
         env:
@@ -87,4 +166,4 @@ jobs:
         run: |
           prerelease=()
           if [[ "$TAG" == *-* ]]; then prerelease=(--prerelease); fi
-          gh release create "$TAG" dist/* --verify-tag --generate-notes --title "$TAG" "${prerelease[@]}"
+          gh release create "$TAG" release/* --verify-tag --generate-notes --title "$TAG" "${prerelease[@]}"
