@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { gridFromRows } from './grid';
-import { collides, findFreeSpot, move, PLAYER_RADIUS } from './player';
+import { gridFromRows } from './grid.js';
+import { collides, findFreeSpot, move, PLAYER_RADIUS } from './player.js';
 
 const room = gridFromRows([
 	'#######', //

@@ -1,7 +1,7 @@
-import type { Grid } from './grid';
-import { layoutMarkdown, type Measure, type PageLayout, type Section } from './layout';
-import { findFreeSpot, type Player } from './player';
-import { rasterize } from './rasterize';
+import type { Grid } from './grid.js';
+import { layoutMarkdown, type Measure, type PageLayout, type Section } from './layout.js';
+import { findFreeSpot, type Player } from './player.js';
+import { rasterize } from './rasterize.js';
 
 export interface World {
 	layout: PageLayout;

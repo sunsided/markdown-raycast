@@ -52,6 +52,9 @@ jobs:
       - name: Build
         run: task build
 
+      - name: Package
+        run: task package
+
   actions:
     name: Lint workflows
     runs-on: ubuntu-latest

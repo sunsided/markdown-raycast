@@ -1,4 +1,4 @@
-import { isSolid, type Grid } from './grid';
+import { isSolid, type Grid } from './grid.js';
 
 export interface Player {
 	x: number;

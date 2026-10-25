@@ -1,5 +1,5 @@
 import { Lexer, type Token, type Tokens } from 'marked';
-import { Material, headingMaterial } from './materials';
+import { Material, headingMaterial } from './materials.js';
 
 /**
  * Lays a Markdown document out like a rendered page. The result is a list of

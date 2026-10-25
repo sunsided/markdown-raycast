@@ -1,5 +1,5 @@
-import { cellAt, type Grid } from './grid';
-import { Material } from './materials';
+import { cellAt, type Grid } from './grid.js';
+import { Material } from './materials.js';
 
 export interface RayHit {
 	/** Distance along the camera direction (fisheye-corrected when the ray is `dir + plane * t`). */

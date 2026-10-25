@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_LAYOUT, layoutMarkdown, type Measure, type TextOp } from './layout';
-import { Material } from './materials';
+import { DEFAULT_LAYOUT, layoutMarkdown, type Measure, type TextOp } from './layout.js';
+import { Material } from './materials.js';
 
 /** Monospace stand-in for canvas text metrics. */
 const measure: Measure = (text, font) => text.length * font.size * 0.5;

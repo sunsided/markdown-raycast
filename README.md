@@ -26,3 +26,41 @@ Pushes to `main` build the site with `BASE_PATH=/<repo>` and publish it to GitHu
 Pushing a `v*` tag runs the full check/test/build pipeline and, if it passes, creates a GitHub
 release with the zipped static site and its SHA-256 checksum (`.github/workflows/release.yaml`).
 Tags containing a `-` (e.g. `v1.0.0-rc.1`) are published as pre-releases.
+
+## Package
+
+The engine and the game ship as [`@sunsided/markdown-raycast`](https://github.com/sunsided/markdown-raycast/pkgs/npm/markdown-raycast), published to npmjs and GitHub Packages from `v*` tags.
+
+| Entry point                             | What it is                                                                           |
+| --------------------------------------- | ------------------------------------------------------------------------------------ |
+| `@sunsided/markdown-raycast`            | Framework-agnostic engine: layout, rasterizer, raycaster, renderer, minimap          |
+| `@sunsided/markdown-raycast/svelte`     | `<MarkdownRaycaster markdown={…} />` Svelte 5 component                              |
+| `@sunsided/markdown-raycast/vanilla`    | `mount(element, { markdown })` with the Svelte runtime bundled in, for any framework |
+| `@sunsided/markdown-raycast/styles.css` | Default design tokens; override any `--token` on `:root`                             |
+
+```svelte
+<script>
+	import '@sunsided/markdown-raycast/styles.css';
+	import { MarkdownRaycaster } from '@sunsided/markdown-raycast/svelte';
+</script>
+
+<div style="height: 80vh"><MarkdownRaycaster markdown={'# Hello\n\nWalk me.'} /></div>
+```
+
+```js
+import { mount } from '@sunsided/markdown-raycast/vanilla';
+
+const game = mount(document.getElementById('game'), { markdown: '# Hello' });
+game.setMarkdown('# Another file');
+game.destroy();
+```
+
+The container needs a definite size. Keys are only handled while the game view has focus,
+so the host page keeps its own shortcuts.
+
+Installing from GitHub Packages needs a token with `read:packages`, even for this public package;
+installing from npmjs needs none.
+
+## License
+
+Licensed under any of [EUPL-1.2](LICENSE-EUPL), [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at your option.

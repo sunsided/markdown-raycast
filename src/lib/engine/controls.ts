@@ -1,5 +1,5 @@
-import type { Grid } from './grid';
-import { move, type Player } from './player';
+import type { Grid } from './grid.js';
+import { move, type Player } from './player.js';
 
 export const WALK_SPEED = 16; // cells per second
 export const RUN_FACTOR = 2.2;

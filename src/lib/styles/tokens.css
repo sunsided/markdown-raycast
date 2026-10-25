@@ -1,10 +1,12 @@
 /*
  * Design tokens for the UI chrome (everything that is not drawn by the raycaster).
+ * Declared under :where(:root) so they have zero specificity: a host page can
+ * override any token with a plain :root (or narrower) rule.
  * Primitive tokens hold raw values; semantic tokens map them to roles and are the
  * only ones components should use. The paper/ink primitives mirror the engine
  * palette in src/lib/engine/materials.ts so chrome and world feel like one page.
  */
-:root {
+:where(:root) {
 	/* ── Primitives ─────────────────────────────── */
 	--color-paper-50: #fbf8f0;
 	--color-paper-100: #f3eee0;
@@ -78,7 +80,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-	:root {
+	:where(:root) {
 		--surface-page: var(--color-ink-900);
 		--surface-panel: color-mix(in srgb, var(--color-ink-900) 85%, transparent);
 		--surface-sunken: var(--color-ink-700);
@@ -91,30 +93,8 @@
 }
 
 @media (max-width: 640px) {
-	:root {
+	:where(:root) {
 		--minimap-width: min(9rem, 35vw);
 		--minimap-height: min(12rem, 40dvh);
 	}
-}
-
-*,
-*::before,
-*::after {
-	box-sizing: border-box;
-}
-
-html,
-body {
-	margin: 0;
-	height: 100%;
-	background: var(--surface-page);
-	color: var(--text-primary);
-	font-family: var(--font-family-sans);
-	font-size: var(--font-size-300);
-	line-height: var(--line-height-normal);
-}
-
-:focus-visible {
-	outline: 2px solid var(--focus-ring);
-	outline-offset: 2px;
 }

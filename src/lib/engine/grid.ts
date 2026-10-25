@@ -1,4 +1,4 @@
-import { Material } from './materials';
+import { Material } from './materials.js';
 
 /** The walkable world: one material id per cell, row-major. */
 export interface Grid {

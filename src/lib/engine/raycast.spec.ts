@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { gridFromRows } from './grid';
-import { Material } from './materials';
-import { castRay, emptyHit } from './raycast';
+import { gridFromRows } from './grid.js';
+import { Material } from './materials.js';
+import { castRay, emptyHit } from './raycast.js';
 
 const grid = gridFromRows([
 	'..........', //
