@@ -1,0 +1,115 @@
+/*
+ * Design tokens for the UI chrome (everything that is not drawn by the raycaster).
+ * Primitive tokens hold raw values; semantic tokens map them to roles and are the
+ * only ones components should use. The paper/ink primitives mirror the engine
+ * palette in src/lib/engine/materials.ts so chrome and world feel like one page.
+ */
+:root {
+	/* ── Primitives ─────────────────────────────── */
+	--color-paper-50: #fbf8f0;
+	--color-paper-100: #f3eee0;
+	--color-paper-200: #e6dfcb;
+	--color-paper-300: #cfc5aa;
+	--color-ink-900: #1d1d27;
+	--color-ink-700: #3a3a48;
+	--color-ink-500: #6b6b78;
+	--color-ink-300: #a4a4ae;
+	--color-red-600: #b3261e;
+	--color-red-500: #e8222b;
+	--color-blue-600: #1f5fbf;
+	--color-amber-400: #ffc400;
+	--color-white: #ffffff;
+	--color-black: #000000;
+
+	--font-family-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	--font-family-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+	--font-size-100: 0.75rem;
+	--font-size-200: 0.875rem;
+	--font-size-300: 1rem;
+	--font-size-400: 1.25rem;
+	--font-weight-regular: 400;
+	--font-weight-bold: 700;
+	--line-height-tight: 1.2;
+	--line-height-normal: 1.5;
+
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-6: 1.5rem;
+	--space-8: 2rem;
+
+	--radius-sm: 4px;
+	--radius-md: 8px;
+	--radius-pill: 999px;
+
+	--duration-fast: 120ms;
+	--duration-normal: 220ms;
+	--easing-standard: cubic-bezier(0.2, 0, 0, 1);
+
+	/* ── Semantic ───────────────────────────────── */
+	--surface-page: var(--color-paper-100);
+	--surface-panel: color-mix(in srgb, var(--color-paper-50) 88%, transparent);
+	--surface-sunken: var(--color-paper-200);
+	--surface-scrim: color-mix(in srgb, var(--color-ink-900) 55%, transparent);
+	--text-primary: var(--color-ink-900);
+	--text-secondary: var(--color-ink-500);
+	--text-on-accent: var(--color-white);
+	--text-heading: var(--color-red-600);
+	--border-subtle: var(--color-paper-300);
+	--border-strong: var(--color-ink-700);
+	--accent: var(--color-red-600);
+	--accent-hover: var(--color-red-500);
+	--focus-ring: var(--color-blue-600);
+	--shadow-panel: 0 2px 12px color-mix(in srgb, var(--color-black) 18%, transparent);
+
+	--panel-padding: var(--space-3);
+	--panel-radius: var(--radius-md);
+	--control-height: 2rem;
+	--minimap-width: 15rem;
+	--minimap-height: 20rem;
+	--z-hud: 10;
+	--z-overlay: 20;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--surface-page: var(--color-ink-900);
+		--surface-panel: color-mix(in srgb, var(--color-ink-900) 85%, transparent);
+		--surface-sunken: var(--color-ink-700);
+		--text-primary: var(--color-paper-50);
+		--text-secondary: var(--color-ink-300);
+		--text-heading: var(--color-red-500);
+		--border-subtle: var(--color-ink-700);
+		--border-strong: var(--color-paper-300);
+	}
+}
+
+@media (max-width: 640px) {
+	:root {
+		--minimap-width: 9rem;
+		--minimap-height: 12rem;
+	}
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	height: 100%;
+	background: var(--surface-page);
+	color: var(--text-primary);
+	font-family: var(--font-family-sans);
+	font-size: var(--font-size-300);
+	line-height: var(--line-height-normal);
+}
+
+:focus-visible {
+	outline: 2px solid var(--focus-ring);
+	outline-offset: 2px;
+}
