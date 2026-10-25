@@ -52,7 +52,7 @@ import { mount } from '@sunsided/markdown-raycast/vanilla';
 
 const game = mount(document.getElementById('game'), { markdown: '# Hello' });
 game.setMarkdown('# Another file');
-game.destroy();
+await game.destroy();
 ```
 
 The container needs a definite size. Keys are only handled while the game view has focus,

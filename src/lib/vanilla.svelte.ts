@@ -21,8 +21,8 @@ export interface RaycasterOptions {
 export interface RaycasterHandle {
 	/** Replaces the document and rebuilds the world. */
 	setMarkdown(markdown: string): void;
-	/** Unmounts the game and stops its render loop. */
-	destroy(): void;
+	/** Unmounts the game and stops its render loop; resolves once teardown is complete. */
+	destroy(): Promise<void>;
 }
 
 const STYLE_ID = 'markdown-raycast-tokens';
@@ -45,7 +45,7 @@ export function mount(target: HTMLElement, options: RaycasterOptions): Raycaster
 			props.markdown = markdown;
 		},
 		destroy() {
-			void unmount(component);
+			return unmount(component);
 		}
 	};
 }
