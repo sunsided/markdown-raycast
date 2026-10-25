@@ -1,0 +1,138 @@
+# markdown-raycast — walk through a Markdown file as a raycaster maze.
+# This project uses yarn (via corepack) — not npm or pnpm.
+# https://taskfile.dev
+version: '3'
+
+vars:
+  YARN_MSG: 'yarn not found — install Node.js and run: corepack enable'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list --sort=none
+    silent: true
+
+  install:
+    desc: Install dependencies
+    preconditions:
+      - sh: command -v yarn
+        msg: '{{.YARN_MSG}}'
+    sources: [package.json, yarn.lock, .yarnrc.yml]
+    generates: [node_modules/.yarn-state.yml]
+    cmds:
+      - yarn install --immutable
+
+  dev:
+    desc: Start the development server
+    deps: [install]
+    cmds:
+      - yarn dev {{.CLI_ARGS}}
+
+  build:
+    desc: Build the static site into build/ (set BASE_PATH=/repo for GitHub Pages)
+    deps: [install]
+    cmds:
+      - yarn build
+
+  preview:
+    desc: Preview the production build locally
+    deps: [build]
+    cmds:
+      - yarn preview {{.CLI_ARGS}}
+
+  test:
+    desc: Run unit tests
+    deps: [install]
+    cmds:
+      - yarn test {{.CLI_ARGS}}
+
+  test:watch:
+    desc: Run unit tests in watch mode
+    deps: [install]
+    cmds:
+      - yarn test:unit
+
+  fmt:
+    desc: Format the code
+    aliases: [format]
+    deps: [install]
+    cmds:
+      - yarn format
+
+  fmt:check:
+    desc: Check formatting without modifying files
+    deps: [install]
+    cmds:
+      - yarn prettier --check .
+
+  typecheck:
+    desc: Type-check Svelte and TypeScript sources
+    deps: [install]
+    cmds:
+      - yarn check
+
+  lint:
+    desc: Lint the code (prettier check + eslint)
+    deps: [install]
+    cmds:
+      - yarn lint
+
+  lint:fix:
+    desc: Lint and auto-fix issues
+    aliases: [fix]
+    deps: [install]
+    cmds:
+      - yarn eslint --fix .
+      - task: fmt
+
+  lint:actions:
+    desc: Lint GitHub Actions workflows (actionlint + zizmor)
+    cmds:
+      - task: lint:actionlint
+      - task: lint:zizmor
+
+  lint:actionlint:
+    desc: Lint workflows with actionlint
+    preconditions:
+      - sh: command -v actionlint || command -v docker
+        msg: 'actionlint not found — go install github.com/rhysd/actionlint/cmd/actionlint@latest (or install docker)'
+    cmds:
+      - |
+        if command -v actionlint >/dev/null; then
+          actionlint
+        else
+          docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest -color
+        fi
+
+  lint:zizmor:
+    desc: Audit workflows for security issues with zizmor
+    preconditions:
+      - sh: command -v zizmor || command -v uvx
+        msg: 'zizmor not found — install uv (https://docs.astral.sh/uv/) or: pipx install zizmor'
+    cmds:
+      - |
+        if command -v zizmor >/dev/null; then
+          zizmor .github/workflows
+        else
+          uvx zizmor .github/workflows
+        fi
+
+  check:
+    desc: Run all static checks (format, types, lint, workflows)
+    cmds:
+      - task: typecheck
+      - task: lint
+      - task: lint:actions
+
+  ci:
+    desc: Full CI sequence (checks, tests, build)
+    cmds:
+      - task: check
+      - task: test
+      - task: build
+
+  clean:
+    desc: Remove build output and caches
+    cmds:
+      - rm -rf build .svelte-kit node_modules/.vite
