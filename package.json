@@ -30,6 +30,9 @@
 		"!dist/**/*.spec.*",
 		"LICENSE-*"
 	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
